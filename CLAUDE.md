@@ -9,7 +9,7 @@ Ponytail is a "lazy senior dev" ruleset packaged for 16 different AI agent harne
 Windsurf, Cline, etc.). There is almost no application logic — the "product" is:
 
 1. **The rule text**, shipped in many host-specific copies that must stay in sync.
-2. **Node lifecycle hooks** that inject the rules and track the active mode per session.
+2. **Go lifecycle hooks** that inject the rules and track the active mode per session.
 3. **Skills** (`/ponytail`, `/ponytail-review`, …) that host harnesses expose as commands.
 
 Most changes are edits to text/manifests, not features. The CI guards below are the
@@ -47,10 +47,10 @@ but a set of load-bearing phrases (the safety carve-outs, the test reflex, etc.)
 appear verbatim in both it and `AGENTS.md` (the `ruleInvariants` list in `internal/gen`).
 
 **Version is single-sourced from `ponytail.go`.** `gen` writes the `Version` constant into
-the `version` field of all seven manifests (`.claude-plugin/`, `.codex-plugin/`, `.devin-plugin/`,
-`.github/plugin/` plugin.json, `gemini-extension.json`, `package.json`, `ponytail-mcp/package.json`);
+the `version` field of all six manifests (`.claude-plugin/`, `.codex-plugin/`, `.devin-plugin/`,
+`.github/plugin/` plugin.json, `gemini-extension.json`, `package.json`);
 `check` fails if any drifts, and on a release-tag CI run if the tag ≠ `Version`. A release bumps
-the one constant, not seven files by hand.
+the one constant, not six files by hand.
 
 ## Hook runtime (the `ponytail` binary)
 
@@ -65,8 +65,10 @@ for Codex/Copilot). Absent flag = off.
   and `stop ponytail` / `normal mode` (whole-message only) to change the live mode.
 - `ponytail subagent` — SubagentStart: re-injects the mode into subagents.
 - `ponytail instructions <mode>` / `default-mode` / `set-default <mode>` — the pieces the
-  in-process JS shims (OpenCode `.mjs`, `pi-extension/`, `ponytail-mcp/`) call instead of
+  in-process JS shims (OpenCode `.mjs`, `pi-extension/`) call instead of
   re-implementing; they keep only host wiring + trivial inline mode parsing.
+- `ponytail statusline` — prints the active-mode badge for Claude Code statusLine.
+- `ponytail mcp` — serves the `ponytail` prompt and `ponytail_instructions` tool over MCP stdio.
 - `ponytail uninstall` — removes the flag, config file, and the statusLine entry it added.
 
 Host detection (Codex/Copilot/native) and the per-host stdout shape live in `internal/hooks`

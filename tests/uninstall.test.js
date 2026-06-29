@@ -41,7 +41,7 @@ fs.writeFileSync(configPath, JSON.stringify({ defaultMode: 'ultra' }));
 
 const settingsPath = path.join(claudeDir, 'settings.json');
 fs.writeFileSync(settingsPath, JSON.stringify({
-  statusLine: { type: 'command', command: 'bash /some/path/ponytail-statusline.sh' },
+  statusLine: { type: 'command', command: '"/some/path/bin/ponytail" statusline' },
 }));
 
 const env = {
@@ -62,6 +62,17 @@ assert.equal(
   'ponytail statusLine entry must be removed',
 );
 
+// Already-installed script statuslines must still be cleaned up after the port.
+fs.writeFileSync(settingsPath, JSON.stringify({
+  statusLine: { type: 'command', command: 'bash /some/path/ponytail-statusline.sh' },
+}));
+result = runUninstall(env);
+assert.equal(result.status, 0, result.stderr);
+assert.equal(
+  JSON.parse(fs.readFileSync(settingsPath, 'utf8')).statusLine,
+  undefined,
+  'legacy ponytail statusLine entry must be removed',
+);
 // A user's own, unrelated statusLine must survive untouched.
 fs.writeFileSync(settingsPath, JSON.stringify({
   statusLine: { type: 'command', command: 'bash ~/my-custom-statusline.sh' },
@@ -80,4 +91,4 @@ assert.equal(
 result = runUninstall({ HOME: path.join(temp, 'home-empty'), USERPROFILE: path.join(temp, 'home-empty') });
 assert.equal(result.status, 0, result.stderr);
 
-console.log('uninstall script checks passed');
+console.log('uninstall checks passed');

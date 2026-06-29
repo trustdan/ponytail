@@ -39,8 +39,8 @@ func TestNormalize(t *testing.T) {
 // embedded in a shell command.
 func TestIsShellSafe(t *testing.T) {
 	safe := []string{
-		`C:\Users\x\.claude\plugins\ponytail\hooks\ponytail-statusline.ps1`,
-		`/home/u/.claude/plugins/ponytail/hooks/ponytail-statusline.sh`,
+		`C:\Users\x\.claude\plugins\ponytail\bin\ponytail-windows-amd64.exe`,
+		`/home/u/.claude/plugins/ponytail/bin/ponytail`,
 	}
 	unsafe := []string{`/tmp/a"&calc.exe&"/x.sh`, `/tmp/$(calc)/x.sh`, `/tmp/a;rm -rf/x.sh`}
 	for _, p := range safe {

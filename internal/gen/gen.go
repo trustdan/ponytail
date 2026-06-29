@@ -49,7 +49,6 @@ var versionFiles = []string{
 	".github/plugin/plugin.json",
 	"gemini-extension.json",
 	"package.json",
-	"ponytail-mcp/package.json",
 }
 
 // Load-bearing phrases that must survive verbatim in both SKILL.md and AGENTS.md.

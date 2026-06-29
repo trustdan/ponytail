@@ -267,7 +267,7 @@ Which files map to which agent: [Agent portability](docs/agent-portability.md).
 | Pi agent | `pi uninstall ponytail` |
 | Cursor / Windsurf / Cline / etc. | Delete the copied rule file |
 
-These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag, `~/.config/ponytail/config.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `bin/ponytail uninstall` (or `bin\ponytail-windows-amd64.exe uninstall` on Windows) to clean those up too. **Run it before the host remove command above** — the binary is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own script, so a statusline you set up yourself is left untouched.
+These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag, `~/.config/ponytail/config.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `bin/ponytail uninstall` (or `bin\ponytail-windows-amd64.exe uninstall` on Windows) to clean those up too. **Run it before the host remove command above** — the binary is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own statusline command, so a statusline you set up yourself is left untouched.
 
 ## Commands
 
@@ -292,7 +292,7 @@ go run ./cmd/ponytail check   # CI guard: fail if any committed copy drifted
 go test ./... && npm test
 ```
 
-After changing the compact rule text or a skill, run `gen` and commit the result; `check` (run in CI) fails if you forget. A release bumps the single `Version` constant in `ponytail.go`, then `gen` propagates it to all seven manifests. To publish the OpenClaw skills to ClawHub, run `clawhub login` once, then `node scripts/publish-openclaw-skills.js` (it publishes all six at the `package.json` version; pass `--dry-run` to preview).
+After changing the compact rule text or a skill, run `gen` and commit the result; `check` (run in CI) fails if you forget. A release bumps the single `Version` constant in `ponytail.go`, then `gen` propagates it to all six manifests. To publish the OpenClaw skills to ClawHub, run `clawhub login` once, then `node scripts/publish-openclaw-skills.js` (it publishes all six at the `package.json` version; pass `--dry-run` to preview).
 
 The correctness benchmark spawns Python for email and CSV checks; `python3` is tried before `python`. CSV checks need `pandas` installed locally.
 

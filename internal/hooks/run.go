@@ -59,17 +59,21 @@ func Uninstall() {
 	var sl struct {
 		Command string `json:"command"`
 	}
-	// ponytail: substring-match the script name, then drop the whole statusLine
-	// key — a combined statusline (caveman+ponytail) is removed wholesale. Parse
-	// out only ponytail's part if combined statuslines become common.
-	if raw, ok := s["statusLine"]; ok && json.Unmarshal(raw, &sl) == nil &&
-		strings.Contains(sl.Command, "ponytail-statusline") {
+	// ponytail: substring-match the old script or new binary command, then drop
+	// the whole statusLine key. Parse out only ponytail's part if combined
+	// statuslines become common.
+	if raw, ok := s["statusLine"]; ok && json.Unmarshal(raw, &sl) == nil && isPonytailStatusline(sl.Command) {
 		delete(s, "statusLine")
 		out, _ := json.MarshalIndent(s, "", "  ")
 		if os.WriteFile(settings, out, 0o644) == nil {
 			fmt.Println("Removed ponytail statusLine entry from " + settings)
 		}
 	}
+}
+
+func isPonytailStatusline(command string) bool {
+	return strings.Contains(command, "ponytail-statusline") ||
+		(strings.Contains(command, "ponytail") && strings.Contains(command, "statusline"))
 }
 
 func removeIfExists(path, label string) {
