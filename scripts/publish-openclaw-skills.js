@@ -8,8 +8,8 @@
 //
 // Prereqs:
 //   - `clawhub login` once (registry auth persists)
-//   - skills must be current: run `node scripts/build-openclaw-skills.js` first
-//     if you changed a skill (CI fails if the committed copies are stale)
+//   - skills must be current: run `go run ./cmd/ponytail gen` first if you
+//     changed a skill (CI's `ponytail check` fails if the committed copies are stale)
 //
 // Usage:
 //   node scripts/publish-openclaw-skills.js            # publish all as latest
@@ -26,7 +26,7 @@ const skillsDir = path.join(root, '.openclaw', 'skills');
 const version = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
 
 // Every generated skill dir with a SKILL.md is publishable. Reading the dir
-// (instead of a hardcoded list) covers whatever build-openclaw-skills emits,
+// (instead of a hardcoded list) covers whatever `ponytail gen` emits,
 // with nothing to keep in sync.
 const slugs = fs.readdirSync(skillsDir, { withFileTypes: true })
   .filter((e) => e.isDirectory() && fs.existsSync(path.join(skillsDir, e.name, 'SKILL.md')))
@@ -34,7 +34,7 @@ const slugs = fs.readdirSync(skillsDir, { withFileTypes: true })
   .sort();
 
 if (slugs.length === 0) {
-  console.error(`No skills under ${path.relative(root, skillsDir)}; run build-openclaw-skills.js first.`);
+  console.error(`No skills under ${path.relative(root, skillsDir)}; run \`go run ./cmd/ponytail gen\` first.`);
   process.exit(1);
 }
 

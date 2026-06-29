@@ -1,18 +1,43 @@
-import { createRequire } from "node:module";
+import { execFileSync } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const require = createRequire(import.meta.url);
-const {
-  DEFAULT_MODE,
-  getDefaultMode,
-  normalizeMode,
-  normalizeConfigMode,
-  normalizePersistedMode,
-  isDeactivationCommand,
-  writeDefaultMode,
-} = require("../hooks/ponytail-config.js");
-const { getPonytailInstructions, filterSkillBodyForMode } = require("../hooks/ponytail-instructions.js");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export { filterSkillBodyForMode };
+// Ruleset text and config-file state live in the ponytail binary; pure mode
+// parsing stays inline so the per-input deactivation check never spawns a process.
+function binPath() {
+  if (process.platform === "win32") return path.resolve(__dirname, "../bin/ponytail-windows-amd64.exe");
+  const goos = { darwin: "darwin", linux: "linux" }[process.platform] || process.platform;
+  const goarch = { x64: "amd64", arm64: "arm64" }[process.arch] || process.arch;
+  return path.resolve(__dirname, "../bin", `ponytail-${goos}-${goarch}`);
+}
+function bin(args, fallback = "") {
+  try {
+    return execFileSync(binPath(), args, { encoding: "utf8" });
+  } catch (e) {
+    return fallback;
+  }
+}
+
+const DEFAULT_MODE = "full";
+const RUNTIME_MODES = ["off", "lite", "full", "ultra"];
+const VALID_MODES = ["off", "lite", "full", "ultra", "review"];
+const lc = (m) => (typeof m === "string" ? m.trim().toLowerCase() : "");
+const normalizeMode = (m) => (RUNTIME_MODES.includes(lc(m)) ? lc(m) : null);
+const normalizeConfigMode = (m) => (VALID_MODES.includes(lc(m)) ? lc(m) : null);
+const normalizePersistedMode = (m) => normalizeMode(m) || normalizeConfigMode(m);
+// Whole-message "stop ponytail" / "normal mode" only (trailing punctuation ok).
+const isDeactivationCommand = (text) => {
+  const t = String(text || "").trim().toLowerCase().replace(/[.!?\s]+$/, "");
+  return t === "stop ponytail" || t === "normal mode";
+};
+
+const getDefaultMode = () => bin(["default-mode"], "full\n").trim();
+const getPonytailInstructions = (mode) => bin(["instructions", mode]);
+// Binary prints the normalized mode it wrote, or nothing on an invalid mode.
+const writeDefaultMode = (mode) => bin(["set-default", String(mode ?? "")]).trim() || null;
+
 export const readDefaultMode = getDefaultMode;
 
 export function resolveSessionMode(entries, fallbackMode = DEFAULT_MODE) {

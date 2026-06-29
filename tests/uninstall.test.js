@@ -8,8 +8,15 @@ const { spawnSync } = require('child_process');
 
 const root = path.join(__dirname, '..');
 
+function binPath() {
+  if (process.platform === 'win32') return path.join(root, 'bin', 'ponytail-windows-amd64.exe');
+  const goos = { darwin: 'darwin', linux: 'linux' }[process.platform] || process.platform;
+  const goarch = { x64: 'amd64', arm64: 'arm64' }[process.arch] || process.arch;
+  return path.join(root, 'bin', `ponytail-${goos}-${goarch}`);
+}
+
 function runUninstall(env) {
-  return spawnSync(process.execPath, [path.join(root, 'scripts', 'uninstall.js')], {
+  return spawnSync(binPath(), ['uninstall'], {
     env: { ...process.env, ...env },
     encoding: 'utf8',
   });

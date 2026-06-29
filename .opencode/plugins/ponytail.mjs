@@ -9,7 +9,7 @@
 // OpenCode loads this as a server plugin — add it to your opencode.json:
 //   { "plugin": ["@dietrichgebert/ponytail"] }
 
-import { createRequire } from 'module';
+import { execFileSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -17,10 +17,30 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// The shared instruction builder is CommonJS; bridge to it from this ES module.
-const require = createRequire(import.meta.url);
-const { getPonytailInstructions } = require('../../hooks/ponytail-instructions');
-const { getDefaultMode, normalizePersistedMode } = require('../../hooks/ponytail-config');
+// The ruleset and default-mode resolution live in the ponytail binary now; call
+// the committed build for this host. Pure mode normalization stays inline below
+// to avoid a subprocess on every command.
+function binPath() {
+  if (process.platform === 'win32') return path.resolve(__dirname, '../../bin/ponytail-windows-amd64.exe');
+  const goos = { darwin: 'darwin', linux: 'linux' }[process.platform] || process.platform;
+  const goarch = { x64: 'amd64', arm64: 'arm64' }[process.arch] || process.arch;
+  return path.resolve(__dirname, '../../bin', `ponytail-${goos}-${goarch}`);
+}
+function bin(args, fallback = '') {
+  try {
+    return execFileSync(binPath(), args, { encoding: 'utf8' });
+  } catch (e) {
+    return fallback;
+  }
+}
+const getPonytailInstructions = (mode) => bin(['instructions', mode]);
+const getDefaultMode = () => bin(['default-mode'], 'full\n').trim();
+
+const RUNTIME_MODES = ['off', 'lite', 'full', 'ultra'];
+const VALID_MODES = ['off', 'lite', 'full', 'ultra', 'review'];
+const lc = (m) => (typeof m === 'string' ? m.trim().toLowerCase() : '');
+const normalizePersistedMode = (m) =>
+  (RUNTIME_MODES.includes(lc(m)) || VALID_MODES.includes(lc(m))) ? lc(m) : null;
 
 // OpenCode has no flag-file convention of its own; keep mode beside its config.
 const statePath = path.join(

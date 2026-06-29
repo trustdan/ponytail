@@ -1,0 +1,12 @@
+#!/bin/sh
+# POSIX launcher: pick the committed binary matching this host's OS/arch and exec
+# it. Lets the hook manifests call one stable path instead of mapping uname
+# themselves. Windows hosts call bin/ponytail-windows-amd64.exe directly.
+d=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+arch=$(uname -m)
+case "$arch" in
+  x86_64 | amd64) arch=amd64 ;;
+  aarch64 | arm64) arch=arm64 ;;
+esac
+exec "$d/ponytail-$os-$arch" "$@"

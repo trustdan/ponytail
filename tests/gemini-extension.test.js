@@ -29,7 +29,7 @@ const REUSED_SKILLS = ['skills/ponytail/SKILL.md'];
 // Claude/Codex hook map uses events Gemini does not support, so it must stay
 // behind the host-specific plugin manifests instead.
 const GEMINI_AUTO_HOOKS = 'hooks/hooks.json';
-// Same load-bearing phrases asserted by scripts/check-rule-copies.js: the file
+// Same load-bearing phrases asserted by `ponytail check` (internal/gen): the file
 // contextFileName points at must actually carry the rules, not just exist.
 const RULE_INVARIANTS = [
   'lazy senior',

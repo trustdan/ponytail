@@ -109,7 +109,7 @@ Flojo, no negligente: la validación en límites de confianza, el manejo de pér
 
 El mayor esfuerzo que ponytail te va a pedir:
 
-Los plugins de Claude Code y Codex ejecutan dos pequeños lifecycle hooks de Node.js, así que `node` debe estar en tu PATH (nota para usuarios de Nix/nvm: debe estar en el PATH del shell no-interactivo). Si no lo está, los skills igualmente funcionan, la activación automática simplemente queda en silencio en vez de lanzar un error en cada prompt.
+Los plugins de Claude Code y Codex ejecutan sus lifecycle hooks desde un pequeño binario autocontenido que viene con el plugin: no hace falta Node ni ningún runtime que instalar. Si tu SO/arquitectura no está entre los targets precompilados, los skills igualmente funcionan; la activación automática simplemente queda en silencio en vez de lanzar un error en cada prompt.
 
 ### Claude Code
 
@@ -244,14 +244,15 @@ Los comandos requieren un host compatible con skills (Claude Code, Codex, Devin 
 
 ## Desarrollo
 
-Al cambiar el texto compacto de las reglas, mantén alineadas las copias en los adaptadores:
+Las copias duplicadas en los adaptadores (reglas compactas, skills de OpenClaw, el campo `version` de cada manifiesto) se generan desde una sola fuente embebida — `AGENTS.md`, `skills/` y la constante `Version` en `ponytail.go`:
 
 ```bash
-node scripts/check-rule-copies.js
-npm test
+go run ./cmd/ponytail gen     # regenera cada copia desde la fuente
+go run ./cmd/ponytail check   # guardia de CI: falla si alguna copia quedó desfasada
+go test ./... && npm test
 ```
 
-El paquete de skills de OpenClaw (`.openclaw/skills/`) se genera desde `skills/`; ejecuta `node scripts/build-openclaw-skills.js` después de cambiar un skill, la suite de tests falla si está desactualizado.
+Tras cambiar el texto de las reglas o un skill, ejecuta `gen` y haz commit del resultado; `check` (que corre en CI) falla si lo olvidas. Una release sube la única constante `Version` en `ponytail.go`, y `gen` la propaga a los siete manifiestos.
 
 El benchmark de correctness lanza Python para las verificaciones de email y CSV; se prueba `python3` antes que `python`. Las verificaciones de CSV requieren `pandas` instalado localmente.
 

@@ -16,6 +16,10 @@ jobs:
         with:
           node-version: '22'
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -23,11 +27,19 @@ jobs:
       - name: Install Python deps for correctness checks
         run: pip install pandas
 
-      - name: Check rule copies
-        run: node scripts/check-rule-copies.js
+      - name: Go tests (hooks + generation)
+        run: go test ./...
 
-      - name: Check version consistency
-        run: node scripts/check-versions.js
+      - name: Check generated artifacts and versions are in sync
+        run: go run ./cmd/ponytail check
+
+      # Committed binaries must match a fresh reproducible build, or a Go edit
+      # without a rebuild would ship a stale binary to every host.
+      - name: Rebuild committed binaries
+        run: sh scripts/build-bin.sh
+
+      - name: Check committed binaries are in sync
+        run: git diff --exit-code bin/
 
       - name: Run tests
         run: npm test

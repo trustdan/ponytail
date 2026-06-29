@@ -1,0 +1,5 @@
+# The committed binaries must never be line-ending converted; the POSIX launcher
+# must stay LF + executable so it runs on macOS/Linux regardless of autocrlf.
+bin/ponytail-* binary
+bin/ponytail text eol=lf
+scripts/build-bin.sh text eol=lf

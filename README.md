@@ -109,7 +109,7 @@ Lazy, not negligent: trust-boundary validation, data-loss handling, security, an
 
 The most effort ponytail will ever ask of you:
 
-The Claude Code and Codex plugins run two tiny Node.js lifecycle hooks, so `node` needs to be on your PATH (note for Nix/nvm users: it must be on the non-interactive shell's PATH). If it isn't, the skills still work, the always-on activation just stays quiet instead of erroring on every prompt.
+The Claude Code and Codex plugins run their lifecycle hooks from a tiny self-contained binary that ships with the plugin — no Node, no runtime to install. If your OS/arch isn't one of the prebuilt targets, the skills still work; the always-on activation just stays quiet instead of erroring on every prompt.
 
 ### Claude Code
 
@@ -267,7 +267,7 @@ Which files map to which agent: [Agent portability](docs/agent-portability.md).
 | Pi agent | `pi uninstall ponytail` |
 | Cursor / Windsurf / Cline / etc. | Delete the copied rule file |
 
-These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag, `~/.config/ponytail/config.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `node scripts/uninstall.js` to clean those up too. **Run it before the host remove command above** — the script is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own script, so a statusline you set up yourself is left untouched.
+These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag, `~/.config/ponytail/config.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `bin/ponytail uninstall` (or `bin\ponytail-windows-amd64.exe uninstall` on Windows) to clean those up too. **Run it before the host remove command above** — the binary is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own script, so a statusline you set up yourself is left untouched.
 
 ## Commands
 
@@ -284,14 +284,15 @@ Commands need a skill-capable host (Claude Code, Codex, Devin CLI, OpenCode, Gem
 
 ## Development
 
-When changing the compact rule text, keep the agent copies aligned:
+The duplicated host artifacts (compact rule copies, OpenClaw skills, the version field in every manifest) are generated from one embedded source — `AGENTS.md`, `skills/`, and `ponytail.Version` — by the Go binary:
 
 ```bash
-node scripts/check-rule-copies.js
-npm test
+go run ./cmd/ponytail gen     # rewrite every generated copy from the source
+go run ./cmd/ponytail check   # CI guard: fail if any committed copy drifted
+go test ./... && npm test
 ```
 
-The OpenClaw skill package (`.openclaw/skills/`) is generated from `skills/`; rerun `node scripts/build-openclaw-skills.js` after changing a skill, the test suite fails if it is stale. To publish the skills to ClawHub, run `clawhub login` once, then `node scripts/publish-openclaw-skills.js` (it publishes all six at the `package.json` version; pass `--dry-run` to preview).
+After changing the compact rule text or a skill, run `gen` and commit the result; `check` (run in CI) fails if you forget. A release bumps the single `Version` constant in `ponytail.go`, then `gen` propagates it to all seven manifests. To publish the OpenClaw skills to ClawHub, run `clawhub login` once, then `node scripts/publish-openclaw-skills.js` (it publishes all six at the `package.json` version; pass `--dry-run` to preview).
 
 The correctness benchmark spawns Python for email and CSV checks; `python3` is tried before `python`. CSV checks need `pandas` installed locally.
 

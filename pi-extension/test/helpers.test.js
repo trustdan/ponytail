@@ -5,7 +5,6 @@ import { join } from "node:path";
 import test from "node:test";
 
 import {
-  filterSkillBodyForMode,
   parsePonytailCommand,
   readDefaultMode,
   resolveSessionMode,
@@ -59,34 +58,4 @@ test("readDefaultMode and writeDefaultMode use XDG config path", () => {
     else process.env.PONYTAIL_DEFAULT_MODE = previousDefault;
     rmSync(tempDir, { recursive: true, force: true });
   }
-});
-
-test("filterSkillBodyForMode keeps only requested intensity examples and rows", () => {
-  const body = `---\nname: ponytail\n---\n| **lite** | keep lite |\n| **full** | keep full |\n| **ultra** | keep ultra |\n- lite: Lite example\n- full: Full example\n- ultra: Ultra example\nOther line`;
-
-  const filtered = filterSkillBodyForMode(body, "ultra");
-
-  assert.ok(!filtered.includes("keep lite"));
-  assert.ok(!filtered.includes("keep full"));
-  assert.ok(filtered.includes("keep ultra"));
-  assert.ok(!filtered.includes("Lite example"));
-  assert.ok(filtered.includes("Ultra example"));
-  assert.ok(filtered.includes("Other line"));
-});
-
-test("filterSkillBodyForMode keeps rule bullets that contain a colon", () => {
-  // Regression: rule bullets outside the Intensity section (e.g. the
-  // "No unrequested abstractions:" rule or the `ponytail:` comment convention)
-  // contain a colon and must not be mistaken for mode-example lines.
-  const skillPath = new URL("../../skills/ponytail/SKILL.md", import.meta.url);
-  const body = readFileSync(skillPath, "utf8");
-
-  const filtered = filterSkillBodyForMode(body, "full");
-
-  assert.ok(filtered.includes("No unrequested abstractions"));
-  assert.ok(filtered.includes("Mark deliberate simplifications"));
-  // The Intensity examples are still filtered down to the active mode.
-  assert.ok(filtered.includes('full: "`@lru_cache'));
-  assert.ok(!filtered.includes('lite: "Done'));
-  assert.ok(!filtered.includes('ultra: "No cache'));
 });

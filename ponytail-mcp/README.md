@@ -18,8 +18,8 @@ prompt menu, or that pull context through tools. See issue #70.
   (`{ mode, instructions }`), for hosts that pull context via tools or code
   execution. Read-only.
 
-Mode resolution reuses `hooks/ponytail-config.js`, so `PONYTAIL_DEFAULT_MODE`
-and `~/.config/ponytail/config.json` work the same as everywhere else.
+Mode resolution calls the `ponytail` binary (`default-mode`/`instructions`), so
+`PONYTAIL_DEFAULT_MODE` and `~/.config/ponytail/config.json` work the same as everywhere else.
 
 ## Run it
 

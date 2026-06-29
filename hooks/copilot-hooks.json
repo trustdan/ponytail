@@ -4,16 +4,16 @@
     "sessionStart": [
       {
         "type": "command",
-        "bash": "node \"${PLUGIN_ROOT}/hooks/ponytail-activate.js\"",
-        "powershell": "node \"${PLUGIN_ROOT}\\hooks\\ponytail-activate.js\"",
+        "bash": "sh \"${PLUGIN_ROOT}/bin/ponytail\" activate",
+        "powershell": "& \"$env:PLUGIN_ROOT\\bin\\ponytail-windows-amd64.exe\" activate",
         "timeoutSec": 5
       }
     ],
     "userPromptSubmitted": [
       {
         "type": "command",
-        "bash": "node \"${PLUGIN_ROOT}/hooks/ponytail-mode-tracker.js\"",
-        "powershell": "node \"${PLUGIN_ROOT}\\hooks\\ponytail-mode-tracker.js\"",
+        "bash": "sh \"${PLUGIN_ROOT}/bin/ponytail\" track",
+        "powershell": "& \"$env:PLUGIN_ROOT\\bin\\ponytail-windows-amd64.exe\" track",
         "timeoutSec": 5
       }
     ]

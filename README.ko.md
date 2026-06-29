@@ -109,7 +109,7 @@ ponytail이라면:
 
 ponytail이 당신에게 요구할 수고의 최대치:
 
-Claude Code와 Codex 플러그인은 자그마한 Node.js 라이프사이클 훅 두 개를 돌리니, `node`가 PATH에 잡혀 있어야 한다(Nix/nvm 사용자라면 비대화형 셸의 PATH에 있어야 한다). 없어도 스킬은 멀쩡히 돌아간다. 다만 늘 켜져 있던 자동 활성화가 매 프롬프트마다 에러를 뱉는 대신 조용히 비활성으로 남을 뿐이다.
+Claude Code와 Codex 플러그인은 라이프사이클 훅을 플러그인에 함께 들어 있는 자그마한 단독 실행 바이너리로 돌린다. Node도, 따로 설치할 런타임도 필요 없다. 사용하는 OS/아키텍처가 미리 빌드된 타깃에 없더라도 스킬은 멀쩡히 돌아간다. 다만 늘 켜져 있던 자동 활성화가 매 프롬프트마다 에러를 뱉는 대신 조용히 비활성으로 남을 뿐이다.
 
 ### Claude Code
 
@@ -264,14 +264,15 @@ Codex 확장을 쓰는 VS Code는 이 저장소가 함께 싣는 `AGENTS.md`를 
 
 ## Development
 
-압축 규칙 텍스트를 바꿀 때는, 에이전트 사본들을 같은 상태로 맞춰 둔다:
+중복되는 어댑터 사본들(압축 규칙, OpenClaw 스킬, 각 매니페스트의 `version` 필드)은 단일 임베드 소스 — `AGENTS.md`, `skills/`, 그리고 `ponytail.go`의 `Version` 상수 — 에서 생성된다:
 
 ```bash
-node scripts/check-rule-copies.js
-npm test
+go run ./cmd/ponytail gen     # 소스에서 모든 사본을 다시 생성
+go run ./cmd/ponytail check   # CI 가드: 사본이 묵었으면 실패
+go test ./... && npm test
 ```
 
-OpenClaw 스킬 패키지(`.openclaw/skills/`)는 `skills/`에서 생성된다. 스킬을 바꾼 뒤에는 `node scripts/build-openclaw-skills.js`를 다시 돌린다. 묵은 상태면 테스트 스위트가 실패한다.
+규칙 텍스트나 스킬을 바꾼 뒤에는 `gen`을 돌리고 결과를 커밋한다. 잊으면 CI의 `check`가 실패한다. 릴리스는 `ponytail.go`의 `Version` 상수 하나만 올리면 `gen`이 일곱 개 매니페스트에 전파한다.
 
 정확성 벤치마크는 이메일·CSV 검사를 위해 Python을 띄운다. `python`보다 `python3`를 먼저 시도한다. CSV 검사는 로컬에 `pandas`가 깔려 있어야 한다.
 
