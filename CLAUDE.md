@@ -23,7 +23,9 @@ node --test tests/hooks.test.js   # run a single test file (drives the committed
 go test ./...                     # Go hook + generation tests (golden-compared)
 go run ./cmd/ponytail gen         # regenerate every duplicated host artifact from the embedded source
 go run ./cmd/ponytail check       # drift + version guard (also run in CI)
+go run ./cmd/ponytail doctor      # configure local Claude statusLine wiring
 sh scripts/build-bin.sh           # rebuild the committed per-platform binaries in bin/
+goreleaser release --snapshot --clean  # verify the release build matrix
 ```
 
 `go` must be on PATH (the binary, the generation guard, and the gen/check tooling all live
@@ -69,6 +71,7 @@ for Codex/Copilot). Absent flag = off.
   re-implementing; they keep only host wiring + trivial inline mode parsing.
 - `ponytail statusline` — prints the active-mode badge for Claude Code statusLine.
 - `ponytail mcp` — serves the `ponytail` prompt and `ponytail_instructions` tool over MCP stdio.
+- `ponytail doctor` — configures local Claude Code statusLine wiring when no user-owned statusLine is present.
 - `ponytail uninstall` — removes the flag, config file, and the statusLine entry it added.
 
 Host detection (Codex/Copilot/native) and the per-host stdout shape live in `internal/hooks`
@@ -77,7 +80,7 @@ manifest: `hooks/claude-codex-hooks.json` (Claude + Codex) and `hooks/copilot-ho
 the binary through `bin/ponytail` (POSIX launcher) or `bin/ponytail-windows-amd64.exe`.
 
 **Binaries are committed and generated.** `bin/` holds five per-platform builds produced by
-`sh scripts/build-bin.sh` (reproducible: `-trimpath`, `CGO_ENABLED=0`, `-s -w`). Edit Go, rerun
+`sh scripts/build-bin.sh` (reproducible: `-trimpath`, `CGO_ENABLED=0`, `-s -w`). `.goreleaser.yaml` defines the release archives for the same OS/arch matrix. Edit Go, rerun
 the script, commit `bin/`. CI rebuilds and `git diff --exit-code bin/` fails on a stale binary —
 the third drift guard, alongside generated artifacts and version.
 

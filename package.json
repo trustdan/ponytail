@@ -17,6 +17,9 @@
     "url": "https://github.com/DietrichGebert/ponytail/issues"
   },
   "main": "./.opencode/plugins/ponytail.mjs",
+  "bin": {
+    "ponytail": "./scripts/ponytail-bin.js"
+  },
   "exports": {
     ".": "./.opencode/plugins/ponytail.mjs",
     "./plugin": "./.opencode/plugins/ponytail.mjs"
@@ -25,6 +28,7 @@
     "AGENTS.md",
     "bin/",
     "hooks/",
+    "scripts/ponytail-bin.js",
     "skills/",
     ".opencode/",
     "pi-extension/",

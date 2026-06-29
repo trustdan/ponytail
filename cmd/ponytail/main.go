@@ -10,6 +10,7 @@ import (
 
 	ponytail "github.com/DietrichGebert/ponytail"
 	"github.com/DietrichGebert/ponytail/internal/content"
+	"github.com/DietrichGebert/ponytail/internal/doctor"
 	"github.com/DietrichGebert/ponytail/internal/gen"
 	"github.com/DietrichGebert/ponytail/internal/hooks"
 	"github.com/DietrichGebert/ponytail/internal/mcp"
@@ -19,7 +20,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: ponytail <activate|track|subagent|instructions|default-mode|set-default|uninstall|statusline|mcp|gen|check|version>")
+		fmt.Fprintln(os.Stderr, "usage: ponytail <activate|track|subagent|instructions|default-mode|set-default|uninstall|statusline|mcp|doctor|gen|check|version>")
 		os.Exit(0)
 	}
 	switch os.Args[1] {
@@ -31,7 +32,7 @@ func main() {
 	case "subagent":
 		hooks.Subagent()
 	case "instructions":
-		// Raw ruleset for the active mode — what the in-process shims inject.
+		// Raw ruleset for the active mode - what the in-process shims inject.
 		fmt.Print(content.Instructions(arg(2)))
 	case "default-mode":
 		fmt.Println(mode.DefaultMode())
@@ -47,6 +48,11 @@ func main() {
 	case "mcp":
 		if err := mcp.Run(os.Stdin, os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "mcp:", err)
+			os.Exit(1)
+		}
+	case "doctor":
+		if err := doctor.Run(os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, "doctor:", err)
 			os.Exit(1)
 		}
 	case "gen":

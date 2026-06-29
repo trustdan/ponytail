@@ -109,7 +109,7 @@ Lazy, not negligent: trust-boundary validation, data-loss handling, security, an
 
 The most effort ponytail will ever ask of you:
 
-The Claude Code and Codex plugins run their lifecycle hooks from a tiny self-contained binary that ships with the plugin — no Node, no runtime to install. If your OS/arch isn't one of the prebuilt targets, the skills still work; the always-on activation just stays quiet instead of erroring on every prompt.
+The Claude Code and Codex plugins run their lifecycle hooks from a tiny self-contained binary that ships with the plugin — no Node, no runtime to install. The npm package also exposes that binary as `ponytail`, so `npx @dietrichgebert/ponytail version` works as a smoke test. If your OS/arch isn't one of the prebuilt targets, the skills still work; the always-on activation just stays quiet instead of erroring on every prompt.
 
 ### Claude Code
 
@@ -267,7 +267,7 @@ Which files map to which agent: [Agent portability](docs/agent-portability.md).
 | Pi agent | `pi uninstall ponytail` |
 | Cursor / Windsurf / Cline / etc. | Delete the copied rule file |
 
-These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag, `~/.config/ponytail/config.json`, and (if you accepted the setup nudge) a `statusLine` entry in `~/.claude/settings.json`. Run `bin/ponytail uninstall` (or `bin\ponytail-windows-amd64.exe uninstall` on Windows) to clean those up too. **Run it before the host remove command above** — the binary is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own statusline command, so a statusline you set up yourself is left untouched.
+These remove the plugin's own files. They leave behind a small amount of state ponytail writes outside the plugin folder: the mode flag, `~/.config/ponytail/config.json`, and (if you accepted the setup nudge or ran `ponytail doctor`) a `statusLine` entry in `~/.claude/settings.json`. Run `bin/ponytail uninstall` (or `bin\ponytail-windows-amd64.exe uninstall` on Windows) to clean those up too. **Run it before the host remove command above** — the binary is itself a plugin file, so removing the plugin first deletes it (or run it from a separate clone of this repo). It only removes the statusLine entry if it points at ponytail's own statusline command, so a statusline you set up yourself is left untouched.
 
 ## Commands
 

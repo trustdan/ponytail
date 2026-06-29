@@ -3,3 +3,4 @@
 bin/ponytail-* binary
 bin/ponytail text eol=lf
 scripts/build-bin.sh text eol=lf
+scripts/ponytail-bin.js text eol=lf
