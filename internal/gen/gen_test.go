@@ -45,6 +45,23 @@ func TestVersionFieldRewrite(t *testing.T) {
 	}
 }
 
+// The YAML version swap (Hermes' plugin.yaml) must rewrite only the value and
+// leave the rest of the file — including its line endings — byte-for-byte.
+func TestYAMLVersionRewrite(t *testing.T) {
+	raw, err := os.ReadFile("plugin.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	stale := yamlVersionField.ReplaceAllString(string(raw), "version: 0.0.0")
+	if stale == string(raw) {
+		t.Fatal("setup: version line not found")
+	}
+	got := yamlVersionField.ReplaceAllString(stale, "version: "+ponytail.Version)
+	if got != string(raw) {
+		t.Error("rewrite did not restore plugin.yaml byte-for-byte")
+	}
+}
+
 // A reworded rule that drops a safety carve-out must trip Check, not slip through.
 func TestRuleInvariantGuards(t *testing.T) {
 	if !strings.Contains(norm(ponytail.AgentsMarkdown()), ruleInvariants[0]) {

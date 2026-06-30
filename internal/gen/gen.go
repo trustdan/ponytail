@@ -51,6 +51,10 @@ var versionFiles = []string{
 	"package.json",
 }
 
+// Same single-sourcing for YAML manifests (Hermes' plugin.yaml), which use an
+// unquoted `version:` line the JSON regex above doesn't match.
+var yamlVersionFiles = []string{"plugin.yaml"}
+
 // Load-bearing phrases that must survive verbatim in both SKILL.md and AGENTS.md.
 // ponytail: canary, not full equality — the bodies differ in length, so we pin
 // the safety carve-outs and reflexes a reword could silently drop.
@@ -66,9 +70,10 @@ var ruleInvariants = []string{
 }
 
 var (
-	trailingSelfRef = regexp.MustCompile(`(?s)\n\n\(Yes, this file also applies.*?\)$`)
-	leadingFrontmat = regexp.MustCompile(`(?s)^---\n.*?\n---\n?`)
-	versionField    = regexp.MustCompile(`"version":\s*"([^"]*)"`)
+	trailingSelfRef  = regexp.MustCompile(`(?s)\n\n\(Yes, this file also applies.*?\)$`)
+	leadingFrontmat  = regexp.MustCompile(`(?s)^---\n.*?\n---\n?`)
+	versionField     = regexp.MustCompile(`"version":\s*"([^"]*)"`)
+	yamlVersionField = regexp.MustCompile(`(?m)^version:[ \t]*([^\r\n]*)`)
 )
 
 func norm(s string) string { return strings.ReplaceAll(s, "\r\n", "\n") }
@@ -154,6 +159,20 @@ func Generate() ([]string, error) {
 		}
 		changed = append(changed, p)
 	}
+	for _, p := range yamlVersionFiles {
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			return changed, err
+		}
+		next := yamlVersionField.ReplaceAllString(string(raw), "version: "+ponytail.Version)
+		if next == string(raw) {
+			continue
+		}
+		if err := os.WriteFile(p, []byte(next), 0o644); err != nil {
+			return changed, err
+		}
+		changed = append(changed, p)
+	}
 	return changed, nil
 }
 
@@ -179,6 +198,21 @@ func Check() ([]string, error) {
 			continue
 		}
 		if v := versionValue(string(raw)); v != ponytail.Version {
+			problems = append(problems, fmt.Sprintf("%s version %q != %s — run: ponytail gen", p, v, ponytail.Version))
+		}
+	}
+
+	for _, p := range yamlVersionFiles {
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			problems = append(problems, p+" missing")
+			continue
+		}
+		v := ""
+		if m := yamlVersionField.FindStringSubmatch(string(raw)); m != nil {
+			v = m[1]
+		}
+		if v != ponytail.Version {
 			problems = append(problems, fmt.Sprintf("%s version %q != %s — run: ponytail gen", p, v, ponytail.Version))
 		}
 	}

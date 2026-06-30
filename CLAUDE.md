@@ -49,10 +49,10 @@ but a set of load-bearing phrases (the safety carve-outs, the test reflex, etc.)
 appear verbatim in both it and `AGENTS.md` (the `ruleInvariants` list in `internal/gen`).
 
 **Version is single-sourced from `ponytail.go`.** `gen` writes the `Version` constant into
-the `version` field of all six manifests (`.claude-plugin/`, `.codex-plugin/`, `.devin-plugin/`,
-`.github/plugin/` plugin.json, `gemini-extension.json`, `package.json`);
-`check` fails if any drifts, and on a release-tag CI run if the tag ≠ `Version`. A release bumps
-the one constant, not six files by hand.
+the `version` field of all six JSON manifests (`.claude-plugin/`, `.codex-plugin/`, `.devin-plugin/`,
+`.github/plugin/` plugin.json, `gemini-extension.json`, `package.json`) plus the YAML
+`plugin.yaml` (Hermes); `check` fails if any drifts, and on a release-tag CI run if the tag
+≠ `Version`. A release bumps the one constant, not seven files by hand.
 
 ## Hook runtime (the `ponytail` binary)
 
@@ -88,6 +88,7 @@ the third drift guard, alongside generated artifacts and version.
 
 - `ponytail:` code comments mark deliberate simplifications and their upgrade path — they are
   harvested by `/ponytail-debt`. Keep that convention when adding shortcuts.
-- Adding a new host ecosystem: register its version file in `versionFiles` and its rule copy
-  in `ruleCopies` (with the host frontmatter) in `internal/gen/gen.go`, or `gen`/`check` won't cover it.
+- Adding a new host ecosystem: register its version file in `versionFiles` (JSON) or
+  `yamlVersionFiles` (YAML) and its rule copy in `ruleCopies` (with the host frontmatter)
+  in `internal/gen/gen.go`, or `gen`/`check` won't cover it.
 - `AGENTS.md` applies to agents working on *this* repo too — the ladder governs changes here.
