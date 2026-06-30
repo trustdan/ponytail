@@ -4,3 +4,8 @@ bin/ponytail-* binary
 bin/ponytail text eol=lf
 scripts/build-bin.sh text eol=lf
 scripts/ponytail-bin.js text eol=lf
+
+# Embedded into the binary via go:embed (ponytail.go). Must stay LF so a Windows
+# checkout and Linux CI embed identical bytes — else the rebuilt binary drifts.
+AGENTS.md text eol=lf
+skills/** text eol=lf
