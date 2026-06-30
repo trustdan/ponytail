@@ -2,7 +2,8 @@
 # Cross-compile the committed ponytail binaries. Run on a Version bump (after
 # `go run ./cmd/ponytail gen`); commit the result. CI rebuilds and diffs bin/ to
 # guard drift, so the flags below must stay reproducible: -trimpath strips local
-# paths, CGO_ENABLED=0 avoids the host C toolchain, -s -w drops debug tables.
+# paths, -buildvcs=false drops the per-commit VCS stamp (else every commit changes
+# the bytes), CGO_ENABLED=0 avoids the host C toolchain, -s -w drops debug tables.
 set -eu
 cd "$(dirname "$0")/.."
 
@@ -17,7 +18,7 @@ for t in $targets; do
   [ "$os" = windows ] && out="$out.exe"
   echo "building $out"
   CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" \
-    go build -trimpath -ldflags="-s -w" -o "$out" ./cmd/ponytail
+    go build -trimpath -buildvcs=false -ldflags="-s -w" -o "$out" ./cmd/ponytail
 done
 
 chmod +x bin/ponytail
