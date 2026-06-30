@@ -22,3 +22,24 @@ jobs:
       # No token: id-token: write above lets npm authenticate via OIDC, and
       # provenance is attached automatically. access set in publishConfig.
       - run: npm publish
+
+  # Cut the GitHub Release with cross-platform archives + checksums. Tag-only:
+  # goreleaser derives the version from the tag, so it can't run on a bare
+  # workflow_dispatch.
+  goreleaser:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
